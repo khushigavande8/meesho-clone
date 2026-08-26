@@ -415,8 +415,8 @@ export default function App() {
 
           {/* Bottom Copyright */}
           <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-            <p>© {new Date().getFullYear()} MeeshoClone. Built with React & Tailwind CSS.</p>
-            <p>Designed for Technical Interview Showcase</p>
+            {/* <p>© {new Date().getFullYear()} MeeshoClone. Built with React & Tailwind CSS.</p> */}
+            {/* <p>Designed for Technical Interview Showcase</p> */}
           </div>
         </div>
       </footer>
