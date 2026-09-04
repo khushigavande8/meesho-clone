@@ -1,20 +1,31 @@
 import { useEffect, useState } from 'react';
 import { useCart } from './context/CartContext';
-import { ShoppingBag, Search, Star, X, Plus, Minus, Tag, Truck, Heart, User } from 'lucide-react';
+import { ShoppingBag, Search, Star, X, Plus, Minus, Tag, Truck, Heart, User, CheckCircle, CreditCard, MapPin } from 'lucide-react';
 
 export default function App() {
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  
-  
+
   // Modals & Drawers States
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState(null); // 'about' | 'privacy' | 'terms' | null
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false);
+  const [activeModal, setActiveModal] = useState(null); // 'about' | 'privacy' | 'terms' | null
   const [wishlist, setWishlist] = useState([]);
+
+  // Checkout Form State
+  const [paymentMethod, setPaymentMethod] = useState('cod');
+  const [address, setAddress] = useState({
+    name: '',
+    phone: '',
+    street: '',
+    city: '',
+    pincode: ''
+  });
 
   const { cart, addToCart, removeFromCart } = useCart();
 
@@ -50,8 +61,19 @@ export default function App() {
     }
   };
 
-  const categories = ['all', "men's clothing", "women's clothing", 'jewelery', 'electronics'];
+  const handleCheckoutSubmit = (e) => {
+    e.preventDefault();
+    setIsOrderPlaced(true);
+    setTimeout(() => {
+      setIsOrderPlaced(false);
+      setIsCheckoutOpen(false);
+      setIsCartOpen(false);
+      // Reset form
+      setAddress({ name: '', phone: '', street: '', city: '', pincode: '' });
+    }, 2500);
+  };
 
+  const categories = ['all', "men's clothing", "women's clothing", 'jewelery', 'electronics'];
   const totalPrice = cart.reduce((acc, item) => acc + item.price * item.qty, 0);
 
   return (
@@ -76,9 +98,8 @@ export default function App() {
             />
           </div>
 
-          {/* Header Action Buttons (Profile, Wishlist, Cart) */}
+          {/* Header Action Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Profile Button */}
             <button
               onClick={() => setIsProfileOpen(true)}
               className="flex items-center gap-1.5 text-gray-700 hover:text-pink-600 px-3 py-2 rounded-lg hover:bg-gray-100 transition font-medium text-sm"
@@ -87,7 +108,6 @@ export default function App() {
               <span className="hidden md:inline">Profile</span>
             </button>
 
-            {/* Wishlist Button */}
             <button
               onClick={() => setIsWishlistOpen(true)}
               className="relative flex items-center gap-1.5 text-gray-700 hover:text-pink-600 px-3 py-2 rounded-lg hover:bg-gray-100 transition font-medium text-sm"
@@ -101,7 +121,6 @@ export default function App() {
               )}
             </button>
 
-            {/* Cart Icon */}
             <button
               onClick={() => setIsCartOpen(true)}
               className="relative flex items-center gap-2 bg-pink-50 text-pink-600 px-4 py-2 rounded-lg hover:bg-pink-100 transition font-medium text-sm"
@@ -166,7 +185,6 @@ export default function App() {
                   key={item.id}
                   className="bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg transition duration-200 flex flex-col group relative"
                 >
-                  {/* Heart / Wishlist Icon on Product Card */}
                   <button
                     onClick={() => toggleWishlist(item)}
                     className="absolute top-2 right-2 z-10 p-1.5 bg-white/80 backdrop-blur-sm rounded-full shadow hover:scale-110 transition"
@@ -178,7 +196,6 @@ export default function App() {
                     />
                   </button>
 
-                  {/* Image & Badge */}
                   <div className="relative p-4 h-48 flex items-center justify-center bg-white group-hover:scale-105 transition duration-300">
                     <img src={item.image} alt={item.title} className="max-h-full object-contain" />
                     <div className="absolute top-2 left-2 bg-pink-100 text-pink-800 text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1">
@@ -186,11 +203,9 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Details */}
                   <div className="p-3 flex flex-col flex-1 border-t border-gray-50 bg-gray-50/50">
                     <h4 className="text-xs font-medium text-gray-700 line-clamp-2 h-8">{item.title}</h4>
 
-                    {/* Rating */}
                     <div className="flex items-center gap-1 mt-2">
                       <span className="bg-green-700 text-white text-[10px] font-bold px-1.5 py-0.5 rounded flex items-center gap-0.5">
                         {item.rating?.rate || '4.2'} <Star className="w-2.5 h-2.5 fill-current" />
@@ -198,7 +213,6 @@ export default function App() {
                       <span className="text-[10px] text-gray-400">({item.rating?.count || 120})</span>
                     </div>
 
-                    {/* Price */}
                     <div className="mt-2 flex items-baseline gap-2">
                       <span className="text-sm font-extrabold text-gray-900">₹{Math.floor(item.price * 80)}</span>
                       <span className="text-[10px] text-gray-400 line-through">₹{Math.floor(item.price * 80 * 1.2)}</span>
@@ -271,7 +285,7 @@ export default function App() {
                   <span className="text-pink-600">₹{Math.floor(totalPrice * 80)}</span>
                 </div>
                 <button
-                  onClick={() => alert('Order Placed Successfully!')}
+                  onClick={() => setIsCheckoutOpen(true)}
                   className="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl text-sm shadow-md transition"
                 >
                   Checkout Now
@@ -282,7 +296,120 @@ export default function App() {
         </div>
       )}
 
-      {/* 5. Wishlist Slide-Over Drawer */}
+      {/* 5. Checkout Modal Window */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsCheckoutOpen(false)}></div>
+          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl p-6 z-10 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b pb-3 mb-4">
+              <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-pink-600" /> Delivery & Payment Details
+              </h3>
+              <button onClick={() => setIsCheckoutOpen(false)} className="p-1 text-gray-400 hover:text-gray-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {isOrderPlaced ? (
+              <div className="text-center py-8 space-y-3">
+                <CheckCircle className="w-16 h-16 text-green-500 mx-auto animate-bounce" />
+                <h4 className="text-xl font-bold text-gray-800">Order Placed Successfully!</h4>
+                <p className="text-xs text-gray-500">Thank you for shopping with us. Your items will be delivered soon.</p>
+              </div>
+            ) : (
+              <form onSubmit={handleCheckoutSubmit} className="space-y-4">
+                {/* Shipping Details */}
+                <div>
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Shipping Address</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Full Name"
+                      required
+                      value={address.name}
+                      onChange={(e) => setAddress({ ...address, name: e.target.value })}
+                      className="col-span-2 p-2.5 border rounded-lg text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    />
+                    <input
+                      type="tel"
+                      placeholder="Phone Number"
+                      required
+                      value={address.phone}
+                      onChange={(e) => setAddress({ ...address, phone: e.target.value })}
+                      className="p-2.5 border rounded-lg text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Pincode"
+                      required
+                      value={address.pincode}
+                      onChange={(e) => setAddress({ ...address, pincode: e.target.value })}
+                      className="p-2.5 border rounded-lg text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="House No., Street Name"
+                      required
+                      value={address.street}
+                      onChange={(e) => setAddress({ ...address, street: e.target.value })}
+                      className="col-span-2 p-2.5 border rounded-lg text-xs focus:ring-2 focus:ring-pink-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Payment Selection */}
+                <div className="pt-2">
+                  <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Payment Method</h4>
+                  <div className="space-y-2">
+                    <label className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer text-xs transition ${paymentMethod === 'cod' ? 'border-pink-600 bg-pink-50/50' : 'hover:bg-gray-50'}`}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="payment"
+                          checked={paymentMethod === 'cod'}
+                          onChange={() => setPaymentMethod('cod')}
+                          className="accent-pink-600"
+                        />
+                        <span className="font-semibold text-gray-800">Cash on Delivery (COD)</span>
+                      </div>
+                      <Truck className="w-4 h-4 text-pink-600" />
+                    </label>
+
+                    <label className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer text-xs transition ${paymentMethod === 'upi' ? 'border-pink-600 bg-pink-50/50' : 'hover:bg-gray-50'}`}>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          name="payment"
+                          checked={paymentMethod === 'upi'}
+                          onChange={() => setPaymentMethod('upi')}
+                          className="accent-pink-600"
+                        />
+                        <span className="font-semibold text-gray-800">UPI / GPay / PhonePe</span>
+                      </div>
+                      <CreditCard className="w-4 h-4 text-pink-600" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Amount Summary */}
+                <div className="bg-gray-50 p-3 rounded-xl flex justify-between items-center text-xs border">
+                  <span className="font-medium text-gray-600">Total Payable Amount:</span>
+                  <span className="text-base font-extrabold text-pink-600">₹{Math.floor(totalPrice * 80)}</span>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl text-sm shadow-md transition"
+                >
+                  Place Order Now
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* 6. Wishlist Slide-Over Drawer */}
       {isWishlistOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsWishlistOpen(false)}></div>
@@ -324,7 +451,7 @@ export default function App() {
         </div>
       )}
 
-      {/* 6. Profile Popup Modal */}
+      {/* 7. Profile Popup Modal */}
       {isProfileOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setIsProfileOpen(false)}></div>
@@ -352,11 +479,11 @@ export default function App() {
           </div>
         </div>
       )}
-      {/* 7. Footer Section */}
+
+      {/* 8. Footer Section */}
       <footer className="bg-gray-900 text-gray-300 mt-16 border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            {/* Brand Info */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-extrabold text-pink-500">Meesho</span>
@@ -367,7 +494,6 @@ export default function App() {
               </p>
             </div>
 
-            {/* Quick Links */}
             <div>
               <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Quick Links</h4>
               <ul className="space-y-2 text-xs">
@@ -394,7 +520,6 @@ export default function App() {
               </ul>
             </div>
 
-            {/* Customer Care */}
             <div>
               <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Customer Care</h4>
               <ul className="space-y-2 text-xs text-gray-400">
@@ -405,7 +530,6 @@ export default function App() {
               </ul>
             </div>
 
-            {/* Contact Details */}
             <div>
               <h4 className="text-sm font-bold text-white mb-3 uppercase tracking-wider">Contact Us</h4>
               <p className="text-xs text-gray-400">Email: support@meeshoclone.com</p>
@@ -413,15 +537,14 @@ export default function App() {
             </div>
           </div>
 
-          {/* Bottom Copyright */}
           <div className="border-t border-gray-800 pt-6 text-center text-xs text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2">
-            {/* <p>© {new Date().getFullYear()} MeeshoClone. Built with React & Tailwind CSS.</p> */}
-            {/* <p>Designed for Technical Interview Showcase</p> */}
+            <p>© {new Date().getFullYear()} MeeshoClone. Built with React & Tailwind CSS.</p>
+            <p>Designed for Technical Interview Showcase</p>
           </div>
         </div>
       </footer>
 
-      {/* 8. Footer Info Modals (About Us / Privacy / Terms) */}
+      {/* 9. Footer Info Modals */}
       {activeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setActiveModal(null)}></div>
